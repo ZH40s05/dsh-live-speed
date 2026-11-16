@@ -1,0 +1,10 @@
+node_modules/
+release/
+*.tgz
+*.zip
+*.log
+.env
+.env.*
+.npmrc
+.DS_Store
+coverage/

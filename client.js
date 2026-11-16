@@ -1,7 +1,7 @@
 window.__ModuleLoader__.load({
   id: 'dsh-live-speed',
   factory: require => {
-    const { createElement: h, useEffect, useId, useLayoutEffect, useRef, useState } = require('react')
+    const { createElement: h, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } = require('react')
     const { createPortal } = require('react-dom')
 
     const namespace = 'dsh-live-speed'
@@ -65,10 +65,18 @@ window.__ModuleLoader__.load({
     function replyRate(meter, now) {
       const samples = meter?.samples
       if (!samples?.length) return null
-      const start = samples[windowStart(samples, now)]
-      const elapsed = now - Math.max(start.time, now - windowMs)
-      const characters = samples.at(-1).characters - start.characters
-      return elapsed >= 300 ? characters * 1000 / elapsed : null
+      const index = windowStart(samples, now)
+      const start = samples[index]
+      const boundary = Math.max(start.time, now - windowMs)
+      const elapsed = now - boundary
+      const next = samples[index + 1]
+      // Estimate cumulative characters at the window boundary, rather than
+      // counting an entire interval that began before the rolling window.
+      const fraction = next && next.time > start.time
+        ? Math.min(1, Math.max(0, (boundary - start.time) / (next.time - start.time))) : 0
+      const baseline = start.characters + (next ? (next.characters - start.characters) * fraction : 0)
+      const characters = samples.at(-1).characters - baseline
+      return elapsed >= 300 ? Math.max(0, characters) * 1000 / elapsed : null
     }
 
     function countReplyCharacters(partial) {
@@ -94,8 +102,8 @@ window.__ModuleLoader__.load({
         setNow({ wall, mono: time })
         setMeter(before => {
           const same = before?.attempt === attempt && characters >= before.characters
-          const samples = same ? before.samples.slice(windowStart(before.samples, time)) : []
-          if (characters > 0 && (!same || characters > before.characters)) {
+          const samples = same ? before.samples.slice(windowStart(before.samples, time)) : [{ time, characters }]
+          if (same && characters > before.characters) {
             samples.push({ time, characters })
           }
           return { attempt, characters, samples }
@@ -218,6 +226,10 @@ window.__ModuleLoader__.load({
           viewport?.removeEventListener('scroll', place)
         }
       }, [anchorRef])
+      // Wait for the visible positioned DOM commit before moving focus.
+      useLayoutEffect(() => {
+        if (position !== null) panel.current?.focus({ preventScroll: true })
+      }, [position !== null])
       useEffect(() => {
         function outside(event) {
           if (!rootRef.current?.contains(event.target) && !panel.current?.contains(event.target)) close(false)
@@ -237,7 +249,7 @@ window.__ModuleLoader__.load({
           document.removeEventListener('keydown', escape, true)
         }
       }, [close, rootRef])
-      return createPortal(h('div', { id, ref: panel, className: 'dsh-speed-panel', role: 'dialog',
+      return createPortal(h('div', { id, ref: panel, className: 'dsh-speed-panel', role: 'dialog', tabIndex: -1,
         'aria-label': t('title'), style: position ?? { visibility: 'hidden' } },
         h('header', null, h(Glyph), h('strong', null, t('title')),
           h('button', { type: 'button', onClick: () => close(true), 'aria-label': t('close') },
@@ -264,13 +276,14 @@ window.__ModuleLoader__.load({
         && nativeRetry.status === 'running' ? nativeRetry.retry : undefined
       const attempt = active ? String(step.start.seq) + '/' + (retrying ?? 0) : null
       const current = active && partial?.turn === step.turn && partial.step === step.step ? partial : null
-      const characters = countReplyCharacters(current)
+      const characters = useMemo(() => countReplyCharacters(current), [current])
       const { meter, now } = useMeter(attempt, characters)
       const liveRate = replyRate(meter, now.mono)
       const liveRateLabel = liveRate === null ? null : t('charactersPerSecond', { value: liveRate.toFixed(1) })
       const lastReading = stepReading(last)
       const elapsed = active ? Math.max(0, now.wall - step.start.time) : 0
-      const recordedFirst = !retrying && timing?.turn === step?.turn && timing?.step === step?.step
+      // Native timing is step-level (including retries), not per-attempt TTFT.
+      const recordedFirst = timing?.turn === step?.turn && timing?.step === step?.step
         ? timing?.timing?.firstTokenTime : null
       const liveFirst = active && Number.isFinite(recordedFirst) ? Math.max(0, recordedFirst - step.start.time) : null
       const waiting = active && characters === 0 && liveFirst === null
@@ -366,6 +379,7 @@ window.__ModuleLoader__.load({
       '@media(hover:hover){button.dsh-speed-pill:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}}',
       '.dsh-speed-dot{width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-accent-label-primary,#4c8dff);animation:dsh-speed-pulse 1s ease-in-out infinite}',
       '@keyframes dsh-speed-pulse{0%,100%{opacity:.25}50%{opacity:1}}',
+      '@media(prefers-reduced-motion:reduce){.dsh-speed-dot{animation:none;opacity:1}}',
       '@media(max-width:720px){.dsh-speed-extra{display:none}}',
       '.dsh-speed-panel{position:fixed;z-index:1100;width:min(322px,calc(100vw - 24px));max-height:62vh;overflow:auto;box-sizing:border-box;padding:12px;display:flex;flex-direction:column;gap:8px;border-radius:var(--dsw-radius-lg,16px);background:var(--dsw-specific-menu,var(--dsw-alias-bg-layer-2,Canvas));backdrop-filter:var(--dsw-menu-backdrop-filter);--dsw-elevation-stroke-color:var(--dsw-alias-border-l1);box-shadow:var(--dsw-elevation-prominent);color:var(--dsw-alias-label-primary,CanvasText);font-size:12.5px;line-height:1.5}',
       '@supports not (backdrop-filter:blur(1px)){.dsh-speed-panel{background:var(--dsw-alias-bg-layer-2,Canvas)}}',

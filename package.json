@@ -1,10 +1,22 @@
 {
   "name": "dsh-live-speed",
-  "version": "0.2.5",
-  "private": true,
+  "version": "0.2.6",
+  "license": "MIT",
+  "author": "ZH40s05",
+  "repository": { "type": "git", "url": "git+https://github.com/ZH40s05/dsh-live-speed.git" },
+  "homepage": "https://github.com/ZH40s05/dsh-live-speed#readme",
+  "bugs": { "url": "https://github.com/ZH40s05/dsh-live-speed/issues" },
+  "keywords": ["dsh", "deepseek-harness", "plugin", "speed", "ttft"],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check index.js && node --check client.js",
+    "prepack": "npm run check && npm test"
+  },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
   "description": "DSH 底部实时速度看板，提供首 token 时间、生成速度与会话耗时。",
   "type": "module",
   "engines": {
+    "node": ">=22",
     "dsh": "0.2.2-rc.3"
   },
   "exports": {
@@ -16,7 +28,12 @@
     "index.js",
     "client.js",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "README.en.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
   ],
   "dsh": {
     "bundle": {
