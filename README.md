@@ -6,20 +6,20 @@
 
 ## 兼容性
 
-当前版本 **0.2.6**，适配 **DSH 0.2.2-rc.3** 的 Web 客户端；其他 DSH 版本尚未验证。安装和测试工具使用 Node.js 22 或更新版本。插件使用 DSH 的模块加载器，不能作为独立网页运行。
+当前版本 **0.2.7**，适配 **DSH 0.2.2-rc.3** 的 Web 客户端；其他 DSH 版本尚未验证。安装和测试工具使用 Node.js 22 或更新版本。插件使用 DSH 的模块加载器，不能作为独立网页运行。
 
 ## 安装
 
 从本仓库 GitHub Releases 下载安装包后，使用 DSH 插件页导入 `.tgz`（如宿主提供导入入口），或运行：
 
 ```sh
-dsh plugin add /absolute/path/dsh-live-speed-0.2.6.tgz
+dsh plugin add /absolute/path/dsh-live-speed-0.2.7.tgz
 ```
 
 使用非默认 profile 时：
 
 ```sh
-dsh plugin --profile your-profile add /absolute/path/dsh-live-speed-0.2.6.tgz
+dsh plugin --profile your-profile add /absolute/path/dsh-live-speed-0.2.7.tgz
 ```
 
 宿主按其插件加载流程重载后，在插件页启用或停用。此插件替换原生 `activity` 项，不替换原生 `usage`（token/缓存统计）项。插件管理器通过包内的 `dsh.bundle.patch` 插入宿主插件；不要再手动添加同名配置。卸载：`dsh plugin remove dsh-live-speed`。
@@ -48,7 +48,7 @@ mkdir -p release
 npm pack --pack-destination release
 ```
 
-不需要构建或安装依赖。源码即发行代码，`npm pack` 自动执行语法检查和测试；包内白名单只含入口、客户端、Cordis patch、许可证和文档，不含测试、历史包或本机配置。CI 对 Node.js 22/24 执行同样检查。测试使用 Node 内置 runner 与 VM mock，不等同于真实浏览器端到端验收。
+不需要构建或安装依赖。源码即发行代码，`npm pack` 自动执行语法检查和测试；包内白名单只含入口、客户端、Cordis patch、许可证和文档，不含测试、历史包或本机配置。CI 对 Node.js 22/24 执行同样检查。逻辑测试使用 Node 内置 runner 与 VM mock。0.2.7 排版已另外在实际 Work 页面用 Chromium 截图，并对照原生用量弹层校验桌面明暗主题、移动视口的计算字体与颜色；此验收不代表覆盖全部生成流程。
 
 参见 [更新记录](CHANGELOG.md)、[贡献说明](CONTRIBUTING.md) 与 [安全说明](SECURITY.md)。
 

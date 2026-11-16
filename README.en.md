@@ -6,14 +6,14 @@ A zero-runtime-dependency Web plugin for [DeepSeek Harness](https://github.com/d
 
 ## Compatibility and installation
 
-Version **0.2.6** targets **DSH 0.2.2-rc.3**. Other host versions are unverified. Node.js 22+ is required for development tooling. This is a host-loaded plugin, not a standalone webpage.
+Version **0.2.7** targets **DSH 0.2.2-rc.3**. Other host versions are unverified. Node.js 22+ is required for development tooling. This is a host-loaded plugin, not a standalone webpage.
 
 Download the tarball from GitHub Releases and install it using your host plugin importer, if available, or:
 
 ```sh
-dsh plugin add /absolute/path/dsh-live-speed-0.2.6.tgz
+dsh plugin add /absolute/path/dsh-live-speed-0.2.7.tgz
 # For a non-default profile:
-dsh plugin --profile your-profile add /absolute/path/dsh-live-speed-0.2.6.tgz
+dsh plugin --profile your-profile add /absolute/path/dsh-live-speed-0.2.7.tgz
 ```
 
 Reload following your host plugin lifecycle, then enable/disable in the plugin manager. The bundle patch registers the host entry; do not register it twice manually. Uninstall with `dsh plugin remove dsh-live-speed`. It replaces only `activity`, leaving native token/cache usage intact.
@@ -42,7 +42,7 @@ mkdir -p release
 npm pack --pack-destination release
 ```
 
-No build step or dependency install is required. Source is shipped as-is. Prepack runs syntax checks and Node built-in tests. Tests use VM/DOM mocks rather than a real browser end-to-end suite. Packages allowlist only runtime files, license and documentation. See [contributing](CONTRIBUTING.md), [security](SECURITY.md) and [changelog](CHANGELOG.md).
+No build step or dependency install is required. Source is shipped as-is. Prepack runs syntax checks and Node built-in tests. Logic tests use VM/DOM mocks. Version 0.2.7 typography was additionally screenshot-tested in Chromium on the actual Work page, comparing computed fonts and colors with the native usage dialog on light/dark desktop and mobile viewports; this does not cover all generation flows. Packages allowlist only runtime files, license and documentation. See [contributing](CONTRIBUTING.md), [security](SECURITY.md) and [changelog](CHANGELOG.md).
 
 ## License
 

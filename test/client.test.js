@@ -276,6 +276,22 @@ test('original loader registers plugin, locale, slot, styles and disposes every 
   assert.match(environment.styles[0].textContent, /@keyframes dsh-speed-pulse/)
   assert.match(environment.styles[0].textContent, /--dsw-alias-label-tertiary/)
   assert.match(environment.styles[0].textContent, /data-dsh-speed-pinned-usage/)
+  // Match the host stat-dialog typography rather than the legacy card skin.
+  const css = environment.styles[0].textContent
+  const rule = selector => {
+    const block = css.split('}').map(text => text.trim()).find(text => text.startsWith(selector + '{'))
+    assert.ok(block, 'missing CSS rule: ' + selector)
+    return block.slice(selector.length + 1)
+  }
+  assert.match(rule('.dsh-speed-panel'), /font-size:12px;line-height:18px/)
+  assert.match(rule('.dsh-speed-panel'), /padding:16px;/)
+  assert.match(rule('.dsh-speed-panel header'), /font-weight:500;/)
+  assert.equal(rule('.dsh-speed-panel header strong'), 'font:inherit')
+  assert.match(rule('.dsh-speed-row dt'), /color:var\(--dsw-alias-label-tertiary\)/)
+  assert.match(rule('.dsh-speed-row dd'), /color:var\(--dsw-alias-label-secondary\)/)
+  assert.doesNotMatch(rule('.dsh-speed-row dd'), /font-weight:600/)
+  assert.equal(rule('.dsh-speed-row'), 'display:contents')
+  assert.match(rule('.dsh-speed-panel p'), /font:inherit/)
   for (const cleanup of cleanups.reverse()) cleanup()
   assert.deepEqual(released, ['slot', 'inject', 'locale'])
   assert.equal(environment.styles.length, 0)
